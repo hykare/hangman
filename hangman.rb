@@ -29,8 +29,7 @@ class Hangman
     print_word
     puts 'guess a letter:'
     # TODO: validate input, disable enter
-    guess = gets.chomp.downcase
-
+    guess = enter_valid_guess
     # update word
     if @secret_word.include? guess
       secret_word.each_char.with_index do |char, i|
@@ -38,13 +37,21 @@ class Hangman
       end
     end
     self.guesses_left -= 1
-    # check for game end
   end
 
   def over?
     self.message = "Congratulations! You won! The word was \"#{secret_word}\"" if word == secret_word
     self.message = "You failed. The word was \"#{secret_word}\"" if guesses_left.zero?
     word == secret_word || guesses_left.zero?
+  end
+
+  def enter_valid_guess
+    guess_valid = false
+    until guess_valid
+      guess = gets.chomp.downcase
+      guess_valid = (guess =~ /[[:alpha:]]/) && (guess.length == 1)
+    end
+    guess
   end
 
   def show_result
