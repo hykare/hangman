@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Hangman
   attr_reader :secret_word
   attr_accessor :word, :guesses_left, :message
@@ -28,9 +30,9 @@ class Hangman
     puts "guesses left: #{guesses_left}"
     print_word
     puts 'guess a letter:'
-    # TODO: validate input, disable enter
+
     guess = enter_valid_guess
-    # update word
+
     if @secret_word.include? guess
       secret_word.each_char.with_index do |char, i|
         word[i] = guess if char == guess
@@ -49,9 +51,21 @@ class Hangman
     guess_valid = false
     until guess_valid
       guess = gets.chomp.downcase
+      if guess == 'save'
+        save
+        exit
+      end
       guess_valid = (guess =~ /[[:alpha:]]/) && (guess.length == 1)
     end
     guess
+  end
+
+  def save
+    puts 'Enter save name:'
+    file_name = gets.chomp.split.join('_')
+    save_file = File.new("#{file_name}.yaml", 'w')
+    save_file.puts YAML.dump(self)
+    puts "Game saved as '#{file_name}.yaml'"
   end
 
   def show_result
