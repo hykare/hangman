@@ -42,8 +42,11 @@ class Hangman
   end
 
   def over?
-    self.message = "Congratulations! You won! The word was \"#{secret_word}\"" if word == secret_word
-    self.message = "You failed. The word was \"#{secret_word}\"" if guesses_left.zero?
+    if word == secret_word
+      self.message = "Congratulations! You won! The word was \"#{secret_word}\""
+    elsif guesses_left.zero?
+      self.message = "You failed. The word was \"#{secret_word}\""
+    end
     word == secret_word || guesses_left.zero?
   end
 
