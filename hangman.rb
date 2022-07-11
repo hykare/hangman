@@ -68,10 +68,33 @@ class Hangman
     puts "Game saved as '#{file_name}.yaml'"
   end
 
+  def self.load(file_name)
+    yaml_string = File.read file_name
+    YAML.safe_load(yaml_string, permitted_classes: [Hangman])
+  end
+
   def show_result
     puts message
   end
 end
 
-game = Hangman.new
+def load_saved_game
+  available_files = Dir.glob('*.yaml')
+  if available_files.empty?
+    puts 'no available save files, starting a new game'
+    return Hangman.new
+  end
+  puts "available save files: #{available_files.join(', ')}"
+  puts 'enter save name:'
+  file_name = ''
+  file_name = gets.chomp until available_files.include? file_name
+  Hangman.load file_name
+end
+
+puts 'load saved game or start a new one? (load/new)'
+game = if gets.chomp == 'load'
+         load_saved_game
+       else
+         Hangman.new
+       end
 game.play
