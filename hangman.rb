@@ -1,8 +1,44 @@
 require 'yaml'
 
+module SaveLoad
+  def self.included(klass)
+    klass.extend ClassMethods
+  end
+
+  def save
+    puts 'Enter save name:'
+    file_name = gets.chomp.split.join('_')
+    save_file = File.new("#{file_name}.yaml", 'w')
+    save_file.puts YAML.dump(self)
+    puts "Game saved as '#{file_name}.yaml'"
+  end
+
+  module ClassMethods
+    def load_saved_game
+      available_files = Dir.glob('*.yaml')
+      if available_files.empty?
+        puts 'no available save files, starting a new game'
+        return new
+      end
+      puts "available save files: #{available_files.join(', ')}"
+      puts 'enter save name:'
+      file_name = ''
+      file_name = gets.chomp until available_files.include? file_name
+      self.load file_name
+    end
+
+    def load(file_name)
+      yaml_string = File.read file_name
+      YAML.safe_load(yaml_string, permitted_classes: [self])
+    end
+  end
+end
+
 class Hangman
   attr_reader :secret_word
   attr_accessor :word, :guesses_left, :message
+
+  include SaveLoad
 
   def initialize
     @secret_word = pick_word
@@ -63,40 +99,14 @@ class Hangman
     guess
   end
 
-  def save
-    puts 'Enter save name:'
-    file_name = gets.chomp.split.join('_')
-    save_file = File.new("#{file_name}.yaml", 'w')
-    save_file.puts YAML.dump(self)
-    puts "Game saved as '#{file_name}.yaml'"
-  end
-
-  def self.load(file_name)
-    yaml_string = File.read file_name
-    YAML.safe_load(yaml_string, permitted_classes: [Hangman])
-  end
-
   def show_result
     puts message
   end
 end
 
-def load_saved_game
-  available_files = Dir.glob('*.yaml')
-  if available_files.empty?
-    puts 'no available save files, starting a new game'
-    return Hangman.new
-  end
-  puts "available save files: #{available_files.join(', ')}"
-  puts 'enter save name:'
-  file_name = ''
-  file_name = gets.chomp until available_files.include? file_name
-  Hangman.load file_name
-end
-
 puts 'load saved game or start a new one? (load/new)'
 game = if gets.chomp == 'load'
-         load_saved_game
+         Hangman.load_saved_game
        else
          Hangman.new
        end
